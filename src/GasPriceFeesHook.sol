@@ -9,25 +9,18 @@ import {BalanceDelta} from "v4-core/types/BalanceDelta.sol";
 import {LPFeeLibrary} from "v4-core/libraries/LPFeeLibrary.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "v4-core/types/BeforeSwapDelta.sol";
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract GasPriceFeesHook is BaseHook {
     using LPFeeLibrary for uint24;
 
-    // Keeping track of the moving average gas price
-    uint128 public movingAverageGasPrice;
-    // How many times has the moving average been updated?
-    // Needed as the denominator to update it the next time based on the moving average formula
-    uint104 public movingAverageGasPriceCount;
-
-    // The default base fees we will charge
-    uint24 public constant BASE_FEE = 5000; // 0.5%
+    AggregatorV3Interface internal dataFeed;
 
     error MustUseDynamicFee();
 
     // Initialize BaseHook parent contract in the constructor
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {
-        updateMovingAverage();
+        dataFeed = AggregatorV3Interface(0xceA6Aa74E6A86a7f85B571Ce1C34f1A60B77CD29);
     }
 
     // Required override function for BaseHook to let the PoolManager know which hooks are implemented
@@ -40,7 +33,7 @@ contract GasPriceFeesHook is BaseHook {
             afterAddLiquidity: false,
             afterRemoveLiquidity: false,
             beforeSwap: true, // used to update dynamic fee
-            afterSwap: true,
+            afterSwap: false,
             beforeDonate: false,
             afterDonate: false,
             beforeSwapReturnDelta: false,
@@ -72,39 +65,26 @@ contract GasPriceFeesHook is BaseHook {
         return (this.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
-    function afterSwap(address, PoolKey calldata, IPoolManager.SwapParams calldata, BalanceDelta, bytes calldata)
-        external
-        override
-        returns (bytes4, int128)
-    {
-        updateMovingAverage();
-        return (this.afterSwap.selector, 0);
+    function getFee() public view returns (uint24) {
+        int256 stakingApr = getChainStakingApr();
+
+        uint24 fee = uint24(uint256(stakingApr) / 1_000);
+
+        return fee;
     }
 
-    function getFee() internal view returns (uint24) {
-        uint128 gasPrice = uint128(tx.gasprice);
-
-        // if gasPrice > movingAverageGasPrice * 1.1, then half the fees
-        if (gasPrice > (movingAverageGasPrice * 11) / 10) {
-            return BASE_FEE / 2;
-        }
-
-        // if gasPrice < movingAverageGasPrice * 0.9, then double the fees
-        if (gasPrice < (movingAverageGasPrice * 9) / 10) {
-            return BASE_FEE * 2;
-        }
-
-        return BASE_FEE;
-    }
-
-    // Update our moving average gas price
-    function updateMovingAverage() internal {
-        uint128 gasPrice = uint128(tx.gasprice);
-
-        // New Average = ((Old Average * # of Txns Tracked) + Current Gas Price) / (# of Txns Tracked + 1)
-        movingAverageGasPrice =
-            ((movingAverageGasPrice * movingAverageGasPriceCount) + gasPrice) / (movingAverageGasPriceCount + 1);
-
-        movingAverageGasPriceCount++;
+    function getChainStakingApr() internal view returns (int256) {
+        // prettier-ignore
+        (
+            /* uint80 roundID */
+            ,
+            int256 answer,
+            /*uint startedAt*/
+            ,
+            /*uint timeStamp*/
+            ,
+            /*uint80 answeredInRound*/
+        ) = dataFeed.latestRoundData();
+        return answer;
     }
 }

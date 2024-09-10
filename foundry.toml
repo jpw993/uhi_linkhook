@@ -5,3 +5,8 @@ libs = ["lib"]
 
 evm_version = "cancun"  # hard fork that enabled EIP-1153
 ffi = true
+
+
+[rpc_endpoints]
+mainnet = "wss://ethereum-rpc.publicnode.com"
+sepolia = "wss://ethereum-sepolia-rpc.publicnode.com"
