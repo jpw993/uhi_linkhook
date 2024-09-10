@@ -12,15 +12,15 @@ import {LPFeeLibrary} from "v4-core/libraries/LPFeeLibrary.sol";
 import {PoolKey} from "v4-core/types/PoolKey.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
 import {PoolSwapTest} from "v4-core/test/PoolSwapTest.sol";
-import {GasPriceFeesHook} from "../src/GasPriceFeesHook.sol";
+import {AprLinkHook} from "../src/AprLinkHook.sol";
 import {TickMath} from "v4-core/libraries/TickMath.sol";
 import {console} from "forge-std/console.sol";
 
-contract TestGasPriceFeesHook is Test, Deployers {
+contract TestAprLinkHook is Test, Deployers {
     using CurrencyLibrary for Currency;
     using PoolIdLibrary for PoolKey;
 
-    GasPriceFeesHook hook;
+    AprLinkHook hook;
 
     function setUp() public {
         vm.createSelectFork(vm.rpcUrl("sepolia"), 6667545); // 10 Sept 2024
@@ -34,8 +34,8 @@ contract TestGasPriceFeesHook is Test, Deployers {
         // Deploy our hook with the proper flags
         address hookAddress = address(uint160(Hooks.BEFORE_INITIALIZE_FLAG | Hooks.BEFORE_SWAP_FLAG));
 
-        deployCodeTo("GasPriceFeesHook", abi.encode(manager), hookAddress);
-        hook = GasPriceFeesHook(hookAddress);
+        deployCodeTo("AprLinkHook", abi.encode(manager), hookAddress);
+        hook = AprLinkHook(hookAddress);
 
         // Initialize a pool
         (key,) = initPool(

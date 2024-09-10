@@ -11,7 +11,7 @@ import {BeforeSwapDelta, BeforeSwapDeltaLibrary} from "v4-core/types/BeforeSwapD
 
 import {AggregatorV3Interface} from "chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-contract GasPriceFeesHook is BaseHook {
+contract AprLinkHook is BaseHook {
     using LPFeeLibrary for uint24;
 
     AggregatorV3Interface internal dataFeed;
