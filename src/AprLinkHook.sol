@@ -18,9 +18,13 @@ contract AprLinkHook is BaseHook {
 
     error MustUseDynamicFee();
 
+    // ChainLink feed for 30 rolling average ETH Staking APR
+    // https://docs.chain.link/data-feeds/rates-feeds#eth-staking-apr
+    address constant CHAINLINK_ETH_STAKING_APR_FEED = 0xceA6Aa74E6A86a7f85B571Ce1C34f1A60B77CD29;
+
     // Initialize BaseHook parent contract in the constructor
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {
-        dataFeed = AggregatorV3Interface(0xceA6Aa74E6A86a7f85B571Ce1C34f1A60B77CD29);
+        dataFeed = AggregatorV3Interface(CHAINLINK_ETH_STAKING_APR_FEED);
     }
 
     // Required override function for BaseHook to let the PoolManager know which hooks are implemented
