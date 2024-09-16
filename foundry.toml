@@ -9,4 +9,4 @@ ffi = true
 
 [rpc_endpoints]
 mainnet = "wss://ethereum-rpc.publicnode.com"
-sepolia = "wss://ethereum-sepolia-rpc.publicnode.com"
+sepolia = "wss://sepolia.infura.io/ws/v3/074e6045535d48209742de982d6dad5a"

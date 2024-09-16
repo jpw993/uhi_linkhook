@@ -12,18 +12,20 @@ import {LPFeeLibrary} from "v4-core/libraries/LPFeeLibrary.sol";
 import {PoolKey} from "v4-core/types/PoolKey.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
 import {PoolSwapTest} from "v4-core/test/PoolSwapTest.sol";
-import {AprLinkHook} from "../src/AprLinkHook.sol";
 import {TickMath} from "v4-core/libraries/TickMath.sol";
+import {BalanceDelta} from "v4-core/types/BalanceDelta.sol";
+import {AprLinkHook} from "../src/AprLinkHook.sol";
+
 import {console} from "forge-std/console.sol";
 
-contract TestAprLinkHook is Test, Deployers {
+contract TestAprLinkHook_ForkJuly2024 is Test, Deployers {
     using CurrencyLibrary for Currency;
     using PoolIdLibrary for PoolKey;
 
     AprLinkHook hook;
 
     function setUp() public {
-        vm.createSelectFork(vm.rpcUrl("sepolia"), 6667545); // 10 Sept 2024
+        vm.createSelectFork(vm.rpcUrl("sepolia"), 6398810); // 29 July 2024
 
         // Deploy v4-core
         deployFreshManagerAndRouters();
@@ -67,7 +69,7 @@ contract TestAprLinkHook is Test, Deployers {
 
         IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
             zeroForOne: true,
-            amountSpecified: -0.00001 ether,
+            amountSpecified: 1 gwei,
             sqrtPriceLimitX96: TickMath.MIN_SQRT_PRICE + 1
         });
 
@@ -75,12 +77,14 @@ contract TestAprLinkHook is Test, Deployers {
 
         // check dynamic fee
         uint24 fee = hook.getFee();
-        assertEq(fee, 311); // 0.0311%
+        assertEq(fee, 321); // 0.0321%
 
         // check swap execution
-        swapRouter.swap(key, params, testSettings, ZERO_BYTES);
+        BalanceDelta swapDelta = swapRouter.swap(key, params, testSettings, ZERO_BYTES);
         uint256 balanceOfToken1After = currency1.balanceOfSelf();
-
         assertGt(balanceOfToken1After, balanceOfToken1Before);
+
+        assertEq(swapDelta.amount0(), -1000321105);
+        assertEq(swapDelta.amount1(), 1 gwei);
     }
 }
