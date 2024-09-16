@@ -1,66 +1,19 @@
-## Foundry
+## APR LinkHook
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**Uniswap V4 dynamic fee hook that moves swap fees with off-chain base interest rates using ChainLink**
 
-Foundry consists of:
+The swap fees paid to liquidity provider in Uniswap should already outperform the 'risk-free' interest rate. 
+In Ethereum, the ETH Staking annualized return rate, best represents this 'risk-free' base interest rate.
+This Uniswap V4 Hook contract dynamically adjusts the swap fee, so that the return given to liquidity providers always outperforms the 'risk-free' interest rate offered by ETH Staking.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## Documentation
 
-https://book.getfoundry.sh/
 
-## Usage
+### Demo Video
 
-### Build
+https://youtu.be/QPMjCBRV2oQ
 
-```shell
-$ forge build
-```
 
-### Test
+### Slides
 
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+https://www.canva.com/design/DAGQYTXje94/P97JVfhzCNiPHHVdf98P6g/view
