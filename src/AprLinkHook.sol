@@ -14,7 +14,7 @@ import {AggregatorV3Interface} from "chainlink/contracts/src/v0.8/shared/interfa
 contract AprLinkHook is BaseHook {
     using LPFeeLibrary for uint24;
 
-    AggregatorV3Interface internal dataFeed;
+    AggregatorV3Interface internal chainlinkDataFeed;
 
     error MustUseDynamicFee();
 
@@ -24,7 +24,7 @@ contract AprLinkHook is BaseHook {
 
     // Initialize BaseHook parent contract in the constructor
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {
-        dataFeed = AggregatorV3Interface(CHAINLINK_ETH_STAKING_APR_FEED);
+        chainlinkDataFeed = AggregatorV3Interface(CHAINLINK_ETH_STAKING_APR_FEED);
     }
 
     // Required override function for BaseHook to let the PoolManager know which hooks are implemented
@@ -69,14 +69,6 @@ contract AprLinkHook is BaseHook {
         return (this.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
-    function getFee() public view returns (uint24) {
-        int256 stakingApr = getChainStakingApr();
-
-        uint24 fee = uint24(uint256(stakingApr) / 1_000);
-
-        return fee;
-    }
-
     function getChainStakingApr() internal view returns (int256) {
         // prettier-ignore
         (
@@ -88,7 +80,15 @@ contract AprLinkHook is BaseHook {
             /*uint timeStamp*/
             ,
             /*uint80 answeredInRound*/
-        ) = dataFeed.latestRoundData();
+        ) = chainlinkDataFeed.latestRoundData();
         return answer;
+    }
+
+    function getFee() public view returns (uint24) {
+        int256 stakingApr = getChainStakingApr();
+
+        uint24 fee = uint24(uint256(stakingApr) / 1_000);
+
+        return fee;
     }
 }
